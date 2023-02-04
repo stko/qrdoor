@@ -1,7 +1,7 @@
 /*
  * Required Libraries
  * WiFiManager Library (must use development branch)
- * Arduino Json Library
+ * Arduino Json Library 5.xx !!
  * PubSub Client Library
  *     NOTE: Change MQTT_MAX_PACKET_SIZE in PubSubClient.h to 512
 
@@ -11,29 +11,30 @@
 
 #include "config.h"
 #include <WiFiMQTTManager.h>
+#include <PubSubClient.h>
 
 // Button that will put device into Access Point mode to allow for re-entering WiFi and MQTT settings
-#define RESET_BUTTON 0
-
+#define RESET_BUTTON 1
 WiFiMQTTManager wmm(RESET_BUTTON, AP_PASSWORD);  // AP_PASSWORD is defined in the secrets.h file
 
 void setup() {
-  Serial.begin(115200);
+  //Serial.begin(115200);
   Serial.println(F("WiFiMQTTManager Basic Example"));
   // set debug to true to get verbose logging
   // wm.wm.setDebugOutput(true);
   // most likely need to format FS but only on first use
-  // wmm.formatFS = true;
+  //wmm.formatFS = true;
   // optional - define the function that will subscribe to topics if needed
-  wmm.subscribeTo = subscribeTo;
+  //wmm.subscribeTo = subscribeTo;
   // required - allow WiFiMQTTManager to do it's setup
   wmm.setup(__SKETCH_NAME__);
   // optional - define a callback to handle incoming messages from MQTT
-  wmm.client->setCallback(subscriptionCallback);
+  //wmm.client->setCallback(subscriptionCallback);
   
 }
 
 void loop() {
+
   // required - allow WiFiMQTTManager to check for new MQTT messages, 
   // check for reset button push, and reconnect to MQTT if necessary 
   wmm.loop();
@@ -48,10 +49,12 @@ void loop() {
     char topic[100];
     snprintf(topic, sizeof(topic), "%s%s%s", "sensor/", wmm.deviceId, "/temperature");
     wmm.client->publish(topic, String(temperature).c_str(), true);
+
+  
   }
-
-
 }
+
+
 
 // optional function to subscribe to MQTT topics
 void subscribeTo() {
@@ -78,4 +81,7 @@ void subscriptionCallback(char* topic, byte* message, unsigned int length) {
   //if (String(topic) == "switch/esp1234/led1/output") {
   //  Serial.print("Changing led1 output to ");
   //}
+
+
+  
 }

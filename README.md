@@ -28,3 +28,48 @@ add the ESP32 Library
 4. Install the Esp32 library by going to “Tools > Board > Boards Manager > Search for Esp32 > Install Esp32 from Espressif Systems”.
 5. Select the right board: “Tools > Board > ESP32 Arduino > AI Thinker ESP32-CAM”.
 6. Select the right port by going to “Tools > Port” and then selecting your serial port ([it depends on your operating system](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/establish-serial-connection.html)).
+
+other required Libraries
+
+* WiFiManager Library 
+* Arduino Json Library **5.xx** !!
+* PubSub Client Library
+* WiFiMQTTManager Library
+
+After installing WiFiMQTTManager, go into the library file `.../WiFiMQTTManager.cpp` and move the `Serial.begin(115200);`line as the first line of the constructor
+
+
+
+`WiFiMQTTManager::WiFiMQTTManager(int resetPin, char* APpassword) {
+  Serial.begin(115200);
+  wm = new WiFiManager;
+  lastMsg = 0;
+  formatFS = false;`
+
+
+
+add the line `client->setBufferSize(512);` after the `client.reset(new PubSubClient(_espClient));`
+
+
+
+`  client.reset(new PubSubClient(_espClient));
+  client->setBufferSize(512);
+  client->setServer(_mqtt_server, port);`
+
+
+
+In Tools-Board select :
+
+- ESP32Wrover Module
+
+- Speed 921600
+
+- Flash Frequency 80Mhz
+
+- Flash Mode QIO
+
+- Partition Scheme: Huge app
+
+
+
+
