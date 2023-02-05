@@ -1,7 +1,5 @@
 # qrDoor - Scans QRCodes vie ESP32-CAM and send them as MQTT
 
-
-
 qrCode is a generic application to read QRCodes with a ESP32-CAM module and forward them via MQTT.
 
 It also supports, controllable by MQTT :
@@ -12,15 +10,11 @@ It also supports, controllable by MQTT :
 
 - 1 Input (e.g. for door bell)
 
-
-
 ## Setup
 
 Install the Arduino IDE
 
 add the ESP32 Library
-
-
 
 1. goto “Menu Arduino IDE > Preferences > Settings > Additional board manager URLs”.
 2. Add “[https://dl.espressif.com/dl/package_esp32_index.json”](https://dl.espressif.com/dl/package_esp32_index.json%E2%80%9D) and click OK.
@@ -36,9 +30,9 @@ other required Libraries
 * PubSub Client Library
 * WiFiMQTTManager Library
 
+## Hacks
+
 After installing WiFiMQTTManager, go into the library file `.../WiFiMQTTManager.cpp` and move the `Serial.begin(115200);`line as the first line of the constructor
-
-
 
 `WiFiMQTTManager::WiFiMQTTManager(int resetPin, char* APpassword) {
   Serial.begin(115200);
@@ -46,17 +40,21 @@ After installing WiFiMQTTManager, go into the library file `.../WiFiMQTTManager.
   lastMsg = 0;
   formatFS = false;`
 
-
-
 add the line `client->setBufferSize(512);` after the `client.reset(new PubSubClient(_espClient));`
-
-
 
 `  client.reset(new PubSubClient(_espClient));
   client->setBufferSize(512);
   client->setServer(_mqtt_server, port);`
 
+we modify the `SPIFFS.begin()` line from
 
+` if (SPIFFS.begin()) {`
+
+to 
+
+ `if (SPIFFS.begin(false) || SPIFFS.begin(true)){ `
+
+to format the filesystem at the inital start
 
 In Tools-Board select :
 
@@ -70,6 +68,26 @@ In Tools-Board select :
 
 - Partition Scheme: Huge app
 
+in \~/snap/arduino/85/.arduino15/packages/esp32/hardware/esp32/1.0.6/cores/esp32/main.cpp
 
+increase the task stack size
 
+```cpp
+#ifndef CONFIG_ARDUINO_LOOP_STACK_SIZE
+#define CONFIG_ARDUINO_LOOP_STACK_SIZE 8192
+#endif
 
+#### ---- add this -----
+#define CONFIG_ARDUINO_LOOP_STACK_SIZE 32768
+
+## Credits
+
+```
+
+- The program skeleton comes the demo from WiFiMQTTManager
+
+- The image capture routines are from [GitHub - donny681/ESP32_CAMERA_QR](https://github.com/donny681/ESP32_CAMERA_QR)
+
+-  [GitHub - dlbeer/quirc: QR decoder library](https://github.com/dlbeer/quirc)
+
+- qrcode code sample [GitHub - donny681/ESP32_CAMERA_QR](https://github.com/donny681/ESP32_CAMERA_QR)
