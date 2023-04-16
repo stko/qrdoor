@@ -20,7 +20,7 @@ add the ESP32 Library
 2. Add “[https://dl.espressif.com/dl/package_esp32_index.json”](https://dl.espressif.com/dl/package_esp32_index.json%E2%80%9D) and click OK.
 3. Restart Arduino IDE and connect your board to a USB port.
 4. Install the Esp32 library by going to “Tools > Board > Boards Manager > Search for Esp32 > Install Esp32 from Espressif Systems”.
-5. Select the right board: “Tools > Board > ESP32 Arduino > AI Thinker ESP32-CAM”.
+5. Select the right board: “Tools > Board > ESP32 Arduino > ESP32 Wrover".
 6. Select the right port by going to “Tools > Port” and then selecting your serial port ([it depends on your operating system](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/establish-serial-connection.html)).
 
 other required Libraries

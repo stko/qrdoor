@@ -13,8 +13,11 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 #include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 #include "quirc_internal.h"
 
@@ -25,7 +28,7 @@ const char *quirc_version(void)
 
 struct quirc *quirc_new(void)
 {
-	struct quirc *q = malloc(sizeof(*q));
+	struct quirc *q = (quirc*)malloc(sizeof(*q));
 
 	if (!q)
 		return NULL;
@@ -51,6 +54,9 @@ int quirc_resize(struct quirc *q, int w, int h)
 	quirc_pixel_t	*pixels = NULL;
 	size_t num_vars;
 	size_t vars_byte_size;
+		size_t olddim ;
+	size_t newdim ;
+	size_t min ;
 	struct quirc_flood_fill_vars *vars = NULL;
 
 	/*
@@ -66,15 +72,15 @@ int quirc_resize(struct quirc *q, int w, int h)
 	 * alloc a new buffer for q->image. We avoid realloc(3) because we want
 	 * on failure to be leave `q` in a consistant, unmodified state.
 	 */
-	image = calloc(w, h);
+	image = (uint8_t*) calloc(w, h);
 	if (!image)
 		goto fail;
 
 	/* compute the "old" (i.e. currently allocated) and the "new"
 	   (i.e. requested) image dimensions */
-	size_t olddim = q->w * q->h;
-	size_t newdim = w * h;
-	size_t min = (olddim < newdim ? olddim : newdim);
+	olddim = q->w * q->h;
+	newdim = w * h;
+	min = (olddim < newdim ? olddim : newdim);
 
 	/*
 	 * copy the data into the new buffer, avoiding (a) to read beyond the
@@ -85,7 +91,7 @@ int quirc_resize(struct quirc *q, int w, int h)
 
 	/* alloc a new buffer for q->pixels if needed */
 	if (!QUIRC_PIXEL_ALIAS_IMAGE) {
-		pixels = calloc(newdim, sizeof(quirc_pixel_t));
+		pixels = (quirc_pixel_t *) calloc(newdim, sizeof(quirc_pixel_t));
 		if (!pixels)
 			goto fail;
 	}
@@ -113,7 +119,7 @@ int quirc_resize(struct quirc *q, int w, int h)
 	if (vars_byte_size / sizeof(*vars) != num_vars) {
 		goto fail; /* size_t overflow */
 	}
-	vars = malloc(vars_byte_size);
+	vars = (quirc_flood_fill_vars *)malloc(vars_byte_size);
 	if (!vars)
 		goto fail;
 
@@ -163,3 +169,6 @@ const char *quirc_strerror(quirc_decode_error_t err)
 
 	return "Unknown error";
 }
+#ifdef __cplusplus
+}
+#endif
