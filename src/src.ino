@@ -31,18 +31,17 @@ const int indicatorLED = 33;       // onboard small LED pin (33)
 
 uint32_t lastStatus = millis(); // last time status light changed status (to flash all ok led)
 
-//WiFiMQTTManager wmm(RESET_BUTTON, AP_PASSWORD); // AP_PASSWORD is defined in the secrets.h file
-
+// WiFiMQTTManager wmm(RESET_BUTTON, AP_PASSWORD); // AP_PASSWORD is defined in the secrets.h file
 
 void setup()
 {
-    pinMode(LED_PIN, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println();
-  //Serial.println(F("WiFiMQTTManager Basic Example"));
+  // Serial.println(F("WiFiMQTTManager Basic Example"));
   Serial.println("WiFiMQTTManager Basic Example");
-  xTaskCreate(qrtask,"qrtask",32768,NULL,1,NULL);
+  xTaskCreate(qrtask, "qrtask", 32768, NULL, 1, NULL);
   // set debug to true to get verbose logging
   // wm.wm.setDebugOutput(true);
   // most likely need to format FS but only on first use
@@ -50,7 +49,7 @@ void setup()
   // optional - define the function that will subscribe to topics if needed
   // wmm.subscribeTo = subscribeTo;
   // required - allow WiFiMQTTManager to do it's setup
-  //ööwmm.setup(__SKETCH_NAME__);
+  // ööwmm.setup(__SKETCH_NAME__);
   // optional - define a callback to handle incoming messages from MQTT
   // wmm.client->setCallback(subscriptionCallback);
 }
@@ -58,31 +57,32 @@ void setup()
 void loop()
 {
   delay(500);
-digitalWrite(LED_PIN, !digitalRead(LED_PIN));
-  // required - allow WiFiMQTTManager to check for new MQTT messages,
-  // check for reset button push, and reconnect to MQTT if necessary
-//wmm.loop();
+  digitalWrite(LED_PIN, !digitalRead(LED_PIN));
+  // Serial.println("Wloop");
+  //  required - allow WiFiMQTTManager to check for new MQTT messages,
+  //  check for reset button push, and reconnect to MQTT if necessary
+  // wmm.loop();
 
-/*
-  // optional - example of publishing to MQTT a sensor reading once a 1 minute
-  long now = millis();
-  if (now - wmm.lastMsg > 60000)
-  {
-    wmm.lastMsg = now;
-    float temperature = 70; // read sensor here
-    Serial.print("Temperature: ");
-    Serial.println(temperature);
-    char topic[100];
-    snprintf(topic, sizeof(topic), "%s%s%s", "sensor/", wmm.deviceId, "/temperature");
-    wmm.client->publish(topic, String(temperature).c_str(), true);
-  }
-  // flash status LED to show sketch is running ok
-  if ((unsigned long)(millis() - lastStatus) >= TimeBetweenStatus)
-  {
-    lastStatus = millis();                                  // reset timer
-    digitalWrite(indicatorLED, !digitalRead(indicatorLED)); // flip indicator led status
-  }
-  */
+  /*
+    // optional - example of publishing to MQTT a sensor reading once a 1 minute
+    long now = millis();
+    if (now - wmm.lastMsg > 60000)
+    {
+      wmm.lastMsg = now;
+      float temperature = 70; // read sensor here
+      Serial.print("Temperature: ");
+      Serial.println(temperature);
+      char topic[100];
+      snprintf(topic, sizeof(topic), "%s%s%s", "sensor/", wmm.deviceId, "/temperature");
+      wmm.client->publish(topic, String(temperature).c_str(), true);
+    }
+    // flash status LED to show sketch is running ok
+    if ((unsigned long)(millis() - lastStatus) >= TimeBetweenStatus)
+    {
+      lastStatus = millis();                                  // reset timer
+      digitalWrite(indicatorLED, !digitalRead(indicatorLED)); // flip indicator led status
+    }
+    */
 }
 
 /*
