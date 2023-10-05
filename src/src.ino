@@ -29,7 +29,7 @@ const int indicatorLED = 33;       // onboard small LED pin (33)
 #define LED_PIN indicatorLED
 
 // Button that will put device into Access Point mode to allow for re-entering WiFi and MQTT settings
-#define RESET_BUTTON 0
+#define RESET_BUTTON 3
 
 uint32_t lastStatus = millis(); // last time status light changed status (to flash all ok led)
 
@@ -47,7 +47,7 @@ void setup()
   Serial.println("WiFiMQTTManager Basic Example");
 
   // set debug to true to get verbose logging
-  wm.wm.setDebugOutput(true);
+  //wm.wm.setDebugOutput(true);
   // most likely need to format FS but only on first use
   // wmm.formatFS = true;
   // optional - define the function that will subscribe to topics if needed
@@ -60,7 +60,7 @@ void setup()
 // Set up Core 1 task handler
 
 // xTaskCreate(qrtask, "qrtask", 32768, NULL, 1, NULL);
-  /*   xTaskCreatePinnedToCore(
+    xTaskCreatePinnedToCore(
     qrtask,
     "qrtask",
     32768,
@@ -68,7 +68,7 @@ void setup()
     1,
     &QrReaderTask,
     1);
- */}
+}
 
   void loop()
   {
