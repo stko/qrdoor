@@ -2,7 +2,7 @@
     "configuration": "PartitionScheme=huge_app,FlashMode=qio,FlashFreq=80,UploadSpeed=921600,DebugLevel=none,EraseFlash=none",
     "board": "esp32:esp32:esp32wrover",
     "output": "build",
-    "sketch": "src/src.ino",
+    "sketch": "qrdoor/qrdoor.ino",
     "port": "/dev/ttyUSB0",
     "programmer": "esptool.py"
 }
