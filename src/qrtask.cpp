@@ -26,6 +26,8 @@
 
 #include "camera_pins.h"
 
+QueueHandle_t xQrCodeQueue ;
+
 void setup_camera()
 {
 
@@ -132,6 +134,26 @@ void dump_data(const struct quirc_data *data)
         Serial.printf((const char *)F("--    ECI: %d\n"), data->eci);
 }
 
+void queue_data(const struct quirc_data *data,  QueueHandle_t xQrCodeQueue )
+{
+    if(
+        data->data_type==QUIRC_DATA_TYPE_BYTE
+        || data->data_type==QUIRC_DATA_TYPE_NUMERIC
+        || data->data_type==QUIRC_DATA_TYPE_ALPHA
+        ){
+            int str_size=strlen((char *)data->payload)+1;
+            int real_len=str_size>data->payload_len ? data->payload_len+1 : str_size;
+            Serial.printf((const char *)F("--    real_len: %d\n"),real_len);
+            if (real_len<1) return;
+            char *qrCodeStr = (char *) malloc(real_len);
+            memcpy(qrCodeStr,(void * )data->payload,real_len);
+            qrCodeStr[real_len-1]=0;
+            Serial.printf((const char *)F("--    converted String: %s\n"),qrCodeStr);
+            xQueueSendToBack(xQrCodeQueue, &qrCodeStr, portMAX_DELAY);
+            //free(qrCodeStr); if not send it, free it :-)
+        }
+}
+
 void qr_recognize(uint8_t *buffer, int width, int heigth)
 {
     Serial.printf((const char *)F("-- begin to qr_recognize\r\n"));
@@ -176,6 +198,7 @@ void qr_recognize(uint8_t *buffer, int width, int heigth)
     quirc_decode(&code, &qd);
     // return ;
     dump_data(&qd);
+    queue_data(&qd,  xQrCodeQueue );
     // dump_info(q);
     quirc_destroy(q);
     //  j++;
@@ -185,7 +208,7 @@ void qr_recognize(uint8_t *buffer, int width, int heigth)
 void qrtask(void *pvParameters)
 {
     Serial.println("Start QR Task");
-
+    xQrCodeQueue = (QueueHandle_t )pvParameters;
     setup_camera();
 
     while (1)
