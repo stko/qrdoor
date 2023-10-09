@@ -1,34 +1,68 @@
-# qrDoor - Scans QRCodes vie ESP32-CAM and send them as MQTT
+# QRDoor - Scans QRCodes via ESP32-CAM and send them via MQTT
 
-qrCode is a generic application to read QRCodes with a ESP32-CAM module and forward them via MQTT.
+(not fully finalized, QR is working, the additional IOs are not implemented yet)
 
-It also supports, controllable by MQTT :
+QRDoor is a generic application to read QRCodes with a ESP32-CAM module and forward them via MQTT.
 
-- a  triggered output port
+It also supports, controlled by MQTT :
+- one Input (e.g. for adoor bell button)
+- one triggered output port (for the door lock)
 
-- 2 LED status outputs
+All the Wifi setup is made through the [WifiMQTTManager](https://github.com/dreed47/WifiMQTTManager/tree/master#access-point-configuration), which provides an easy to use setup hotspot.
 
-- 1 Input (e.g. for door bell)
+
+
+## Limitations
+Please be aware that the combination of cheap processor and low-cost camera is far behind the performance of a Desktop PC with a high speed & resolution webcam. What does that mean in detail?:
+* The standard lens together with the auto focus allows only a small distance range where the qrcode can be placed (~25 cm). If it is too far, the qrcode becomes too small, but if it is too close, the picture becomes blurry
+* The autofocus and the brightness control is very slow, and each picture change triggers a re-adjustment
+
+Because of that it's quite impossible to just hold a mobile phone free hand anywhere in front of the camera. The movements of the hand are much quicker as the autofocus :-(
+
+So to read a qrcode from any surface or from a phone, it's highly recommended to construct something like a filing for the object carrying the qrcode in front of the camera to keep the object in position so that the camera can generate a stable picture.
+
+Also the user needs to be made aware that the recognition process can easily take 10 seconds...
+
+
+## Hardware
+
+Just as a starting point the io pins have been taken from [here](https://www.electroniclinic.com/esp32-cam-smart-iot-bell-circuit-diagram-and-programming/) and put into a KiCad schematic separated into two sections:
+* one pcb close to the bell transformator containing the DC converter and the door opener output
+* a second pcb carrying the ESP32cam and its voltage converter
+
+![Schematic](images/schematig.png "Schematic")
 
 ## Setup
 
-Install the Arduino IDE
+The development was made with the VSCode Arduino Extention, so the setup for the original Arduino IDE should be very simular.
 
-add the ESP32 Library
+1) First add (if not already done) the URL for the Espressif Board in "Board Manager / Addional URLs":“[https://dl.espressif.com/dl/package_esp32_index.json”](https://dl.espressif.com/dl/package_esp32_index.json%E2%80%9D)
 
-1. goto “Menu Arduino IDE > Preferences > Settings > Additional board manager URLs”.
-2. Add “[https://dl.espressif.com/dl/package_esp32_index.json”](https://dl.espressif.com/dl/package_esp32_index.json%E2%80%9D) and click OK.
-3. Restart Arduino IDE and connect your board to a USB port.
-4. Install the Esp32 library by going to “Tools > Board > Boards Manager > Search for Esp32 > Install Esp32 from Espressif Systems”.
-5. Select the right board: “Tools > Board > ESP32 Arduino > ESP32 Wrover".
-6. Select the right port by going to “Tools > Port” and then selecting your serial port ([it depends on your operating system](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/establish-serial-connection.html)).
+2) In the Board Manager, search for "esp32" and install "Esp32 from Espressif Systems”
+3) Select the right board: “ESP32 Wrover"
+4) In the Library Manager, install several Libraries. Here's the output from the todays build log:
 
-other required Libraries
+```
+Used library            Version     Pfad                                                                             
+WiFiMQTTManager Library 1.0.1-beta   
+WiFiManager             2.0.15-rc.1            
+WiFi                    2.0.0
+Update                  2.0.0
+WebServer               2.0.0
+DNSServer               2.0.0
+ArduinoJson             5.13.5
+PubSubClient            2.8
+FS                      2.0.0
+SPIFFS                  2.0.0
+```
+Make sure the Arduino Json Library  is a **5.xx** version!!
 
-* WiFiManager Library 
-* Arduino Json Library **5.xx** !!
-* PubSub Client Library
-* WiFiMQTTManager Library
+In Tools-Board select :
+- ESP32Wrover Module
+- Speed 921600
+- Flash Frequency 80Mhz
+- Flash Mode QIO
+- Partition Scheme: Huge app
 
 ## Hacks
 
@@ -46,7 +80,7 @@ add the line `client->setBufferSize(512);` after the `client.reset(new PubSubCli
   client->setBufferSize(512);
   client->setServer(_mqtt_server, port);`
 
-we modify the `SPIFFS.begin()` line from
+Modify the `SPIFFS.begin()` line from
 
 ` if (SPIFFS.begin()) {`
 
@@ -56,17 +90,7 @@ to
 
 to format the filesystem at the inital start
 
-In Tools-Board select :
 
-- ESP32Wrover Module
-
-- Speed 921600
-
-- Flash Frequency 80Mhz
-
-- Flash Mode QIO
-
-- Partition Scheme: Huge app
 
 in \~/snap/arduino/85/.arduino15/packages/esp32/hardware/esp32/1.0.6/cores/esp32/main.cpp
 
@@ -77,17 +101,19 @@ increase the task stack size
 #define CONFIG_ARDUINO_LOOP_STACK_SIZE 8192
 #endif
 
-#### ---- add this -----
+//// ---- ADD this -----
 #define CONFIG_ARDUINO_LOOP_STACK_SIZE 32768
+```
 
 ## Credits
 
-```
-
-- The program skeleton comes the demo from WiFiMQTTManager
+- The program skeleton comes from the  WiFiMQTTManager demo code
 
 - The image capture routines are from [GitHub - donny681/ESP32_CAMERA_QR](https://github.com/donny681/ESP32_CAMERA_QR)
 
--  [GitHub - dlbeer/quirc: QR decoder library](https://github.com/dlbeer/quirc)
+-  The qrcode detection routines are from [GitHub - dlbeer/quirc: QR decoder library](https://github.com/dlbeer/quirc)
+and
 
 - qrcode code sample [GitHub - donny681/ESP32_CAMERA_QR](https://github.com/donny681/ESP32_CAMERA_QR)
+
+
