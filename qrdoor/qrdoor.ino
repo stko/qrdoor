@@ -5,6 +5,14 @@
  * Arduino Json Library 5.xx !!
  * PubSub Client Library
  *     NOTE: Read README.md of how to tweak the library!!
+ * 
+ * Hardware connections (inspired from https://www.electroniclinic.com/esp32-cam-smart-iot-bell-circuit-diagram-and-programming/)
+ * 
+ * Pin 1 : 5V
+ * Pin 2 : GND
+ * Pin 3 : Door lock relay driver output 3.3V High active (GPIO 12)
+ * Pin 4 : Door bell button switch to gnd (GPIO 13)
+ * Pin 5 : Indicator LED output High active (GPIO 15)
  *
  */
 
@@ -34,6 +42,7 @@ const int indicatorLED = 33;       // onboard small LED pin (33)
 uint32_t lastStatus = millis(); // last time status light changed status (to flash all ok led)
 
 extern QueueHandle_t xQrCodeQueue;
+extern WiFiManager *wm;
 
 WiFiMQTTManager wmm(RESET_BUTTON, AP_PASSWORD); // AP_PASSWORD is defined in the secrets.h file
 
@@ -49,7 +58,8 @@ void setup()
   Serial.println("WiFiMQTTManager Basic Example");
 
   // set debug to true to get verbose logging
-  // wm.wm.setDebugOutput(true);
+  wm->setDebugOutput(true);
+  wm->setConnectTimeout(5);
   // most likely need to format FS but only on first use
   // wmm.formatFS = true;
   // optional - define the function that will subscribe to topics if needed

@@ -68,17 +68,35 @@ In Tools-Board select :
 
 After installing WiFiMQTTManager, go into the library file `.../WiFiMQTTManager.cpp` and move the `Serial.begin(115200);`line as the first line of the constructor
 
-`WiFiMQTTManager::WiFiMQTTManager(int resetPin, char* APpassword) {
+```WiFiMQTTManager::WiFiMQTTManager(int resetPin, char* APpassword) {
   Serial.begin(115200);
   wm = new WiFiManager;
   lastMsg = 0;
-  formatFS = false;`
+  formatFS = false;
+  ```
 
 add the line `client->setBufferSize(512);` after the `client.reset(new PubSubClient(_espClient));`
 
-`  client.reset(new PubSubClient(_espClient));
+```
+  client.reset(new PubSubClient(_espClient));
   client->setBufferSize(512);
-  client->setServer(_mqtt_server, port);`
+  client->setServer(_mqtt_server, port);
+  ```
+
+
+comment out the line 158 `wm->resetSettings();` to not loose all settings after failed MQTT server attempt.. and modify delay timings
+
+```
+  client->setServer(_mqtt_server, port);
+  delay(2000);
+  Serial.print("WMM: attempting MQTT connection...");
+  if (!client->connect(clientId)) {
+    Serial.println("failed to connect to MQTT -wait 10 secs and restart...");
+    delay(10000);
+//    wm->resetSettings();
+    ESP.restart(); 
+```
+
 
 Modify the `SPIFFS.begin()` line from
 
@@ -89,6 +107,8 @@ to
  `if (SPIFFS.begin(false) || SPIFFS.begin(true)){ `
 
 to format the filesystem at the inital start
+
+
 
 
 
