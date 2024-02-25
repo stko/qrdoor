@@ -1,0 +1,11 @@
+{
+    "wlan_ssid": "ssid",
+    "wlan_password": "sid_password",
+    "mqtt_server" : "mqtt_server",
+    "mqtt_port" : 0,
+    "mqtt_user" : "mqtt_user",
+    "mqtt_password" : "mqtt_password",
+    "mqtt_keepalive" : 7200,
+    "mqtt_ssl" : false,
+    "mqtt_serial_params" : {}
+}
