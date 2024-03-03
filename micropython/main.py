@@ -92,7 +92,7 @@ except:
 
 relais_pin = Pin(22, Pin.OUT)
 led_pin = Pin(17, Pin.OUT)
-switch_pin = Pin(17, Pin.IN, pull=Pin.PULL_UP)
+switch_pin = Pin(16, Pin.IN, pull=Pin.PULL_UP)
 rx_pin=Pin(21)
 tx_pin=Pin(20)
 uart_id=1
