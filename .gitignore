@@ -1,2 +1,3 @@
 build
-circuit/qrdoor-backups
+circuit/ESP32CAM/qrdoor-backups
+circuit/pico/rpi_pico/rpi_pico-backups
