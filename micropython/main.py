@@ -90,9 +90,12 @@ except:
         "mqtt_serial_params": {},
     }
 
-relais_pin = Pin(15, Pin.OUT)
-led_pin = Pin(14, Pin.OUT)
-switch_pin = Pin(28, Pin.IN, pull=Pin.PULL_UP)
+relais_pin = Pin(22, Pin.OUT)
+led_pin = Pin(17, Pin.OUT)
+switch_pin = Pin(17, Pin.IN, pull=Pin.PULL_UP)
+rx_pin=Pin(21)
+tx_pin=Pin(20)
+uart_id=1
 
 output_switch_time_ticks = 0
 
@@ -104,8 +107,8 @@ for b in s:
 
 
 # UART0 initialization
-uart0 = UART(0, baudrate=9600, tx=Pin(0), rx=Pin(1), bits=8, parity=None, stop=1)
-print("UART0:", uart0)
+uart = UART(uart_id, baudrate=9600, tx=tx_pin, rx=rx_pin, bits=8, parity=None, stop=1)
+print("UART:", uart)
 
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
@@ -148,7 +151,7 @@ while True:
     # print("switch", switch_state)
     control_relais()
     client.check_msg()
-    rxData = uart0.readline()
+    rxData = uart.readline()
     if rxData:
         char = rxData.decode("utf-8")
         if char == "\r":
