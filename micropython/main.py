@@ -1,7 +1,7 @@
 # Bibliotheken laden
 from machine import UART, Pin, unique_id, reset
 import network
-from umqtt.simple import MQTTClient
+from umqtt.robust import MQTTClient
 import utime
 import ujson
 
@@ -53,6 +53,7 @@ def set_relais(seconds):
     output_switch_time_ticks = utime.ticks_add(utime.ticks_ms(), seconds * 1000)
     relais_pin.value(1)
     led_pin.value(1)
+    print("ON for relay and LED")
 
 
 def control_relais():
@@ -69,6 +70,7 @@ def control_relais():
         relais_pin.value(0)
         led_pin.value(0)
         output_switch_time_ticks = 0
+        print("OFF for relay and LED")
 
 
 # reads the settings file
