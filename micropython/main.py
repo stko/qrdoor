@@ -1,10 +1,11 @@
 # Bibliotheken laden
 from machine import UART, Pin, unique_id, reset
+import sys
 import network
-from umqtt.robust import MQTTClient
+from umqtt.robust2 import MQTTClient
 import utime
 import ujson
-
+import time
 
 def connectMQTT(device_id):
     """
@@ -27,15 +28,16 @@ def connectMQTT(device_id):
     print("subscribe to topic", topic)
     return client
 
-def subscribe(topic, msg):
+def subscribe(topic, msg, retain, dup ):
     '''
     handle the received topic
     '''
 
-    global device_id
+    global device_id, last_watchdog_rcv
     topic = topic.decode("utf-8")
     msg = msg.decode("utf-8")
     print("topic", topic, msg)
+    last_watchdog_rcv=time.time()
     if topic == "qrdoor/" + device_id + "/open":
         try:
             seconds = int(msg)
@@ -43,7 +45,9 @@ def subscribe(topic, msg):
                 set_relais(seconds)
         except:
             pass
-
+    if topic == "qrdoor/" + device_id + "/reset":
+        print("MQTT Remote Reboot")
+        reset() # brute force error handling..
 
 def set_relais(seconds):
     '''
@@ -115,23 +119,32 @@ print("UART:", uart)
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
 wlan.config(pm=0xA11140)  # Diable powersave mode
+print(settings["wlan_ssid"], settings["wlan_password"])
 wlan.connect(settings["wlan_ssid"], settings["wlan_password"])
 
-while True:
-    if wlan.status() < 0 or wlan.status() >= 3:
-        break
-    print("waiting for connection...")
-    utime.sleep(1)
 
-# Handle connection error
-if wlan.status() != 3:
+# Note that this may take some time, so we need to wait
+# Wait 5 sec or until connected
+tmo = 50
+while not wlan.isconnected():
+    utime.sleep_ms(100)
+    led_pin.toggle()
+    tmo -= 1
+    if tmo == 0:
+        break
+
+# check if the station is connected to an AP
+if wlan.isconnected():
+    print("=== Station Connected to WiFi \n")
+    config = wlan.ifconfig()
+    led_pin.value(0)
+    print("IP:{0}, Network mask:{1}, Router:{2}, DNS: {3}".format(*config))
+else:
     print("wifi connection failed")
     utime.sleep(10)
+    led_pin.value(1)
     reset()
-else:
-    print("connected")
-    status = wlan.ifconfig()
-    print("ip = " + status[0])
+
 
 client = connectMQTT(device_id)
 
@@ -139,27 +152,49 @@ client = connectMQTT(device_id)
 line = ""
 
 last_switch_state = False
-while True:
-    # read the switch
-    switch_state = switch_pin.value() != 1
-    if switch_state and not last_switch_state:  # raising switch event
-        last_switch_state = True
-        client.publish("qrdoor/" + device_id + "/button", "on")
-        print("button raising edge")
-    if not switch_state and last_switch_state:  # raising switch event
-        client.publish("qrdoor/" + device_id + "/button", "off")
-        print("button falling edge")
-    last_switch_state = switch_state
-    # print("switch", switch_state)
-    control_relais()
-    client.check_msg()
-    rxData = uart.readline()
-    if rxData:
-        char = rxData.decode("utf-8")
-        if char == "\r":
-            print(line)
-            # publish as MQTT payload
-            client.publish("qrdoor/" + device_id + "/code", line)
-            line = ""
-        else:
-            line += char
+watchdog_interval= 6 # defines the time between two watchdog messages
+watchdog_nr_of_fails = 3 # defines the trigger level, how many times a message can fail before the system resets
+last_watchdog_rcv=time.time()
+last_watchdog_send=0
+try:
+    client.publish("qrdoor/" + device_id + "/start", "1")
+    while True:
+        actual_time_secs=time.time()
+        # read the switch
+        switch_state = switch_pin.value() != 1
+        if switch_state and not last_switch_state:  # raising switch event
+            last_switch_state = True
+            client.publish("qrdoor/" + device_id + "/button", "on")
+            print("button raising edge")
+        if not switch_state and last_switch_state:  # raising switch event
+            client.publish("qrdoor/" + device_id + "/button", "off")
+            print("button falling edge")
+        last_switch_state = switch_state
+        # print("switch", switch_state)
+        if last_watchdog_send + watchdog_interval <= actual_time_secs:
+            client.publish("qrdoor/" + device_id + "/watchdog", str(actual_time_secs))
+            last_watchdog_send = actual_time_secs
+        if last_watchdog_rcv + watchdog_nr_of_fails * watchdog_interval < actual_time_secs:
+            print("Watchdog trigger, Reboot: ")
+            reset() # brute force error handling..
+        control_relais()
+        client.check_msg()
+        rxData = uart.readline()
+        if rxData:
+            print("bin",rxData)
+            rxData = rxData.decode("utf-8")
+            print("as str\"",rxData,"\"")
+            rxChars=rxData
+            line += rxChars.strip() ##add wthout eol
+            print("linebuffer",line)
+            if rxData[-1:]== "\r": # the QRCode reader sent
+                print(line)
+                # publish as MQTT payload
+                client.publish("qrdoor/" + device_id + "/code", line)
+                line = ""
+
+                
+except Exception as ex:
+    text=str(ex)
+    print("System Error, Reboot: ",text)
+    reset() # brute force error handling..

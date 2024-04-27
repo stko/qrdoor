@@ -14,7 +14,7 @@ For the hardware connect your rpi pico as shown in the circuit/qrcode_pico schem
 For the software installion the Thonny IDE was used. The steps are
 * for micropython follow the instructions on https://micropython.org/download/RPI_PICO_W/. Make sure you install the version for the *WIFI version* of the Rasperry Pico!
 * connect your Thonny IDE with your pico device
-* In Thonny, in "Tools/Manage Packages.." install the both packages umqtt.simple and umqtt.robust
+* In Thonny, in "Tools/Manage Packages.." install the both packages umqtt.simple2 and umqtt.robust2 (MAKE SURE YOU GOT THE ....2 VERSION)
 * copy the provided file `settings_template.json`to `settings.json`
 * edit the new file `settings.json` and set your own settings
 * via Thonny, copy both main.py and settings.json onto your pico device
