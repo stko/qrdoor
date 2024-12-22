@@ -46,3 +46,4 @@ So finally the whole project was restarted, this time with a Raspberry Pico, Mic
 
 Micropython Image *with* WLAN - Support:  https://micropython.org/download/rp2-pico-w/rp2-pico-w-latest.uf2
 The QR Reader Module: https://www.waveshare.com/wiki/Barcode_Scanner_Module_(D)
+which is a GROW GM60 module
