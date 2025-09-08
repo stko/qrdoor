@@ -34,7 +34,8 @@ When the button is pressed or released, the state is reported to `qrdoor/<device
 ### Door Open command
 When the `qrdoor/<device- id>/open` \<secs\> topic is received, both LED and output pins are set to High for \<secs\> seconds. To avoid unwanted longer power output, this time is limited to 5 secs.
 
-
+## Setup
+Depending on the factory setting of a fresh GM60 qr code reader out of the box, it might be that the qr code reader does not send a trailing <CR> after each scan, which is needed by the software to identify the end of the scan. To fix this, there are configuration QR Codes in the GM60 user manual. Just scan the one named "Add tail 'CR'" to set the trailing <CR>.
 
 ## History
 Originally the whole project was started to use a ESP32CAM module for it. This work can be found in the qrdoor folder as an Arduino Project. It finally worked in some way, but it came out that the ESPCAM can't handle it properly when suddenly a mobile phone with a qrcode on it is presented to the camera. All the brightness control and auto focus need to be completely re- adjusted, which takes at least 10 seconds, and during the whole time the user needs to hold the mobile phone stable and calm in a constant position and distance in front to the camera - and this just don't work.
